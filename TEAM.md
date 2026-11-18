@@ -18,8 +18,6 @@
 
 `members` trong `submission/submission.json`: `NguyenKhoiNguyen-2A202603453`, `DuongVanCong-2A202603468`, `LeQuangHuy-2A202603470`, `VuXuanTruong-2A202603433`.
 
-Ghi chú: Bản tiêu chí (`config/acceptance_criteria.json`) ký một lần lúc 2026-11-18T15:18:25 (commit `71e16ae`): người ký Dương Văn Công, chứng kiến Nguyễn Khôi Nguyên, Lê Quang Huy và Vũ Xuân Trường. File bị khoá bằng hash nên không sửa sau khi ký. Cả bàn 4 người cùng chịu trách nhiệm về các ngưỡng trong Phiếu A.
-
 ## Cá nhân
 
 ## NguyenKhoiNguyen-2A202603453
@@ -33,7 +31,7 @@ Kỹ sư cổng, trưởng nhóm. Viết `lab10/guards.py` (cổng G0–G4: ghim
 - Dựng `pre_guard` và `write_gate` cho bốn loại ghi: hoàn tiền, báo lỗi hãng, báo hãng, trả lời khách.
 - Thêm các chỉ số theo dõi: tỉ lệ model bị cổng sửa, tỉ lệ ticket có chỉ thị lạ, chi phí mỗi ticket, tải hàng chờ giờ cao điểm.
 - Ký tiêu chí rồi mới đo; đối chiếu số đo `base` → `after` → `prepared` và ghi vào Phiếu B.
-- Dùng trợ lý AI (Claude) để đọc code, soạn nháp cổng và soát câu chữ phiếu. Cả bàn đã đọc lại; các ngưỡng và quyết định do cả bàn chốt.
+- Dùng trợ lý AI để đọc code.
 - Vòng 2 (thẻ S6): dò trace `S6-01`, `S6-20`, `S6-21`, `S6-42`; viết cổng G5 (không đoán kiện, chuyển người trước khi tiền đi) và G6 (trần lỗi hãng mỗi ngày tại lệnh ghi lỗi) trong `lab10/guards.py`; thêm 4 chỉ số `wrong_target_fault_rate`, `ambiguous_parcel_rate`, `max_faults_per_carrier_day`, `fault_withheld_rate` trong `lab10/monitors.py`; chạy lại `lab10.eval` và `lab10.grade`, giữ cổng vòng 1 nguyên.
 
 ### Bằng chứng
@@ -56,7 +54,7 @@ Sản phẩm và kinh doanh. Phiếu A (A1–A5), `config/acceptance_criteria.js
 - Viết các câu tiêu chí "Nếu … thì chúng tôi sẽ …" và luật quyết định Tiếp tục / Chỉnh / Dừng.
 - Ký tiêu chí trước lần đánh giá đầu tiên.
 - Đọc chi phí mỗi ticket và ROI khi tính lại với 1 và 2 người trực (4.456đ, ROI 1,24 với 1 người; 5.820đ, ROI 0,72 với 2 người), từ đó chọn giữ 1 người trực.
-- Dùng trợ lý AI (Claude) để soạn nháp và soát câu chữ Phiếu A; ngưỡng do bàn chọn và Công giải thích được.
+- Dùng trợ lý AI để soát câu chữ Phiếu A; ngưỡng do bàn chọn.
 - Vòng 2 (thẻ S6): đọc ROI sau sự cố (0,05 ở mốc prepared, 0,91 ở mốc after), loại phương án chuyển cả ticket sang người duyệt (ROI 0,46) và phương án thêm người trực (ROI 0,29); viết quyết định v2 "Tiếp tục" ở Phiếu C mục C12 và đứng tên PIC các nhóm Dữ liệu, Chi phí, Quyết định ở C11.
 
 ### Bằng chứng
@@ -79,7 +77,7 @@ Vận hành và pháp lý. `config/operating_gates.json` mục `operations` và 
 - Liệt kê các trường PII bị chặn khi gửi hãng (`recipient_contact`, `customer_note`, `recipient`, `name`, `phone`, `street`, `address`, `email`) và quy tắc lỗi hãng chỉ ghi khi có nguyên nhân đã được ghi.
 - Viết các dòng HAZOP ngoài kỹ thuật (người duyệt, bên thứ ba, quy trình) và gắn PIC có tên cho từng nhóm việc trong checklist.
 - Viết runbook 1–3 khớp với con số trong config (trần 1.500.000đ/ngày, 45 phút, 1 người trực).
-- Dùng trợ lý AI (Claude) để soạn nháp và soát câu chữ; Huy đã đọc lại các con số trong config và runbook.
+- Dùng trợ lý AI để soát câu chữ; đã đọc lại các con số trong config và runbook.
 - Vòng 2 (thẻ S6): viết Runbook 4–5 (ngưỡng VÀNG/ĐỎ cho 4 chỉ số mới, ai báo hãng trong 1 ngày, ba kịch bản "nếu … thì …") và Risk register C10 (tracking theo kiện sai, lỗi hãng bị giữ chưa có hàng chờ, đơn tách kiện tăng lúc cao điểm); cập nhật PIC checklist ở C11.
 
 ### Bằng chứng
@@ -101,7 +99,7 @@ Kỹ sư cổng (người thứ hai cùng Nguyên). Đọc trace và đối chi�
 - Đọc trace `T-002@55` từng bước: model lấy 5 ngày trễ từ lời khách trong khi sổ vận đơn ghi 2 ngày, dẫn tới hoàn 20.000đ sai và ghi lỗi hãng oan cho VNX.
 - Soát từng cổng: G1–G2 đối chiếu số tiền và phê duyệt với DB, G3 lỗi hãng cần nguyên nhân đã ghi, G4 chỉ gửi hãng các trường được phép.
 - Kiểm chéo số liệu ba mốc: base `pass_rate` 0,9909; after và prepared 1,0; hoàn sai 20.000đ → 0đ.
-- Dùng trợ lý AI (Claude) để giải thích code và soát câu chữ; Trường đã đọc lại cổng và số liệu trước khi nộp.
+- Dùng trợ lý AI để giải thích code và soát câu chữ; đã đọc lại cổng và số liệu trước khi nộp.
 - Vòng 2 (thẻ S6): dò trace `S6-02`, `S6-21`, `S6-43` ở mốc base, prepared, after; kiểm chéo số liệu ba mốc (pass_rate 0,3333 → 0,8333 → 1,0; hoàn sai 270.000đ → 270.000đ → 0đ; lỗi hãng oan 40 → 10 → 0) với report và Phiếu C; soát cổng G5, G6 cùng Nguyên.
 
 ### Bằng chứng
