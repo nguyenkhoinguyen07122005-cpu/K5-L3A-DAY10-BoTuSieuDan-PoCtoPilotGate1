@@ -31,8 +31,8 @@ Mỗi lệnh `lab10.eval` và `lab10.grade` tự ghi một dòng vào `runs/jour
 | # | Mã lần chạy | Bộ ticket · mốc | Đổi MỘT thứ gì so với lần trước | pass_rate (khoảng tin cậy 95%) | pass_k | Hoàn sai (đ) · lỗi hãng oan · lộ dữ liệu | Tỉ lệ chuyển người | Kết luận (một câu) |
 |---|---|---|---|---|---|---|---|---|
 | 1 | `R-S6-prepared-20261118-195916-1744de` | S6 · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt) | 0,8333 [0,5833; 1,0] | 0,8333 | 270.000 · 10 · 0 | 0,1667 | Cổng vòng 1 đỡ được 6 trong 8 ticket hỏng ở base, còn S6-20 và S6-21 hỏng cả 5 seed; ROI 0,05 < 0,5. |
-| 2 | `R-S6-after-20261118-195935-28ec93` | S6 · after | `guards.py`: thêm G5 (không đoán kiện, chuyển người) và G6 (trần lỗi hãng mỗi ngày tại lệnh ghi lỗi) | 1,0 [1,0; 1,0] | 1,0 | 0 · 0 · 0 | 0,1667 | Hết ca hỏng, ROI 0,91; hoàn cho khách vẫn tự động, chỉ lỗi hãng bị giữ. |
-| 3 | `R-S6-after-20261118-195935-28ec93` | S6 · after | `monitors.py`: thêm 4 chỉ số theo dõi (không đổi cổng) | 1,0 [1,0; 1,0] | 1,0 | 0 · 0 · 0 | 0,1667 | Kết quả cổng không đổi; 4 chỉ số mới hiện trong dòng `monitors` của report. |
+| 2 | `R-S6-after-20261118-195935-28ec93` | S6 · after | `guards.py`: thêm G5 (không đoán kiện, chuyển người) và G6 (trần lỗi hãng mỗi ngày tại lệnh ghi lỗi); `monitors.py` (4 chỉ số mới) được áp cùng lúc nên dòng 2 và dòng 3 trùng mã lần chạy | 1,0 [1,0; 1,0] | 1,0 | 0 · 0 · 0 | 0,1667 | Hết ca hỏng, ROI 0,91; hoàn cho khách vẫn tự động, chỉ lỗi hãng bị giữ. |
+| 3 | `R-S6-after-20261118-195935-28ec93` | S6 · after | không đổi thêm gì so với dòng 2 (cùng code, nên trùng mã); lần chạy này ghi lại 4 chỉ số mới trong report | 1,0 [1,0; 1,0] | 1,0 | 0 · 0 · 0 | 0,1667 | Kết quả cổng không đổi; 4 chỉ số mới hiện trong dòng `monitors` của report. |
 | 4 | `R-base-after-20261118-195935-28ec93` | base · after | (kiểm không regression) | 1,0 [1,0; 1,0] | 1,0 | 0 · 0 · 0 | 0,2273 | Không regression: 22 ticket nền vẫn đạt, chi phí 4.456đ/ticket, ROI 1,24. |
 
 Mốc base của thẻ (chưa có cổng nào): `R-S6-before-20261118-195916-1744de` · pass_rate 0,3333 [0,0833; 0,5833], hoàn sai 270.000đ, 40 lỗi hãng oan, ROI 0,74.
