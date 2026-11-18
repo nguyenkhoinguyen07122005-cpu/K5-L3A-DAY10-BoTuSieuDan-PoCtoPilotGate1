@@ -6,12 +6,12 @@
     "LeQuangHuy-2A202603470",
     "VuXuanTruong-2A202603433"
   ],
-  "incident": "",
+  "incident": "S6",
   "decision_v1": "Tiếp tục",
-  "decision_v2": "",
+  "decision_v2": "Tiếp tục",
   "three_lines": {
-    "environment_assumption": "",
-    "reduce_or_prevent": "",
-    "measure_in_pilot": ""
+    "environment_assumption": "Dữ liệu tracking theo từng kiện (ngày giao, hãng, tài xế) do hãng quét mã đúng và kịp; thực tế hãng nhỏ quét muộn hoặc gán nhầm tài xế.",
+    "reduce_or_prevent": "Cổng NGĂN được ca đoán kiện khi ≥ 2 kiện cùng trễ và việc ghi quá 2 lỗi mỗi hãng mỗi ngày, nhưng chỉ GIẢM tác hại tổng, vì nếu tracking sai hoặc khách ghi sai mã kiện hợp lệ thì cổng vẫn tin.",
+    "measure_in_pilot": "Tỉ lệ đơn tách kiện thật và tỉ lệ ticket không nêu mã kiện, độ chính xác và độ trễ quét mã tracking theo từng hãng, và số ca bị giữ lỗi hãng mỗi ngày so với trần 2."
   }
 }

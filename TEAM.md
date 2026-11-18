@@ -5,7 +5,7 @@
 - Tên nhóm (`TenNhom`, không dấu, không khoảng trắng): BoTuSieuDan
 - Lớp: `L3A`
 - Repo của bàn: `K5-L3A-DAY10-BoTuSieuDan-PoCtoPilotGate1`
-- Thẻ sự cố đã bốc (S1–S8): (ghi số thẻ sau phút 125)
+- Thẻ sự cố đã bốc (S1–S8): S6 ("Tài xế bị trừ thưởng vì kiện của hãng khác", bàn Cặp 8)
 
 ## Thành viên
 
@@ -34,10 +34,11 @@ Kỹ sư cổng, trưởng nhóm. Viết `lab10/guards.py` (cổng G0–G4: ghim
 - Thêm các chỉ số theo dõi: tỉ lệ model bị cổng sửa, tỉ lệ ticket có chỉ thị lạ, chi phí mỗi ticket, tải hàng chờ giờ cao điểm.
 - Ký tiêu chí rồi mới đo; đối chiếu số đo `base` → `after` → `prepared` và ghi vào Phiếu B.
 - Dùng trợ lý AI (Claude) để đọc code, soạn nháp cổng và soát câu chữ phiếu. Cả bàn đã đọc lại; các ngưỡng và quyết định do cả bàn chốt.
+- Vòng 2 (thẻ S6): dò trace `S6-01`, `S6-20`, `S6-21`, `S6-42`; viết cổng G5 (không đoán kiện, chuyển người trước khi tiền đi) và G6 (trần lỗi hãng mỗi ngày tại lệnh ghi lỗi) trong `lab10/guards.py`; thêm 4 chỉ số `wrong_target_fault_rate`, `ambiguous_parcel_rate`, `max_faults_per_carrier_day`, `fault_withheld_rate` trong `lab10/monitors.py`; chạy lại `lab10.eval` và `lab10.grade`, giữ cổng vòng 1 nguyên.
 
 ### Bằng chứng
 
-Commit `71e16ae` (Sign acceptance criteria), commit "LAB 10: chốt cổng vòng 1, quyết định v1" (chốt cổng vòng 1). Mã lần chạy: `R-base-before-20261118-151902-455ee1`, `R-base-after-20261118-151902-455ee1`, `R-base-prepared-20261118-151903-455ee1`.
+Commit `71e16ae` (Sign acceptance criteria), commit "LAB 10: chốt cổng vòng 1, quyết định v1" (chốt cổng vòng 1). Mã lần chạy vòng 1: `R-base-before-20261118-151902-455ee1`, `R-base-after-20261118-151902-455ee1`, `R-base-prepared-20261118-151903-455ee1`; vòng 2 (thẻ S6): `R-S6-before-20261118-195916-1744de`, `R-S6-prepared-20261118-195916-1744de`, `R-S6-after-20261118-195935-28ec93`.
 
 ### Exit ticket
 
@@ -56,6 +57,7 @@ Sản phẩm và kinh doanh. Phiếu A (A1–A5), `config/acceptance_criteria.js
 - Ký tiêu chí trước lần đánh giá đầu tiên.
 - Đọc chi phí mỗi ticket và ROI khi tính lại với 1 và 2 người trực (4.456đ, ROI 1,24 với 1 người; 5.820đ, ROI 0,72 với 2 người), từ đó chọn giữ 1 người trực.
 - Dùng trợ lý AI (Claude) để soạn nháp và soát câu chữ Phiếu A; ngưỡng do bàn chọn và Công giải thích được.
+- Vòng 2 (thẻ S6): đọc ROI sau sự cố (0,05 ở mốc prepared, 0,91 ở mốc after), loại phương án chuyển cả ticket sang người duyệt (ROI 0,46) và phương án thêm người trực (ROI 0,29); viết quyết định v2 "Tiếp tục" ở Phiếu C mục C12 và đứng tên PIC các nhóm Dữ liệu, Chi phí, Quyết định ở C11.
 
 ### Bằng chứng
 
@@ -78,6 +80,7 @@ Vận hành và pháp lý. `config/operating_gates.json` mục `operations` và 
 - Viết các dòng HAZOP ngoài kỹ thuật (người duyệt, bên thứ ba, quy trình) và gắn PIC có tên cho từng nhóm việc trong checklist.
 - Viết runbook 1–3 khớp với con số trong config (trần 1.500.000đ/ngày, 45 phút, 1 người trực).
 - Dùng trợ lý AI (Claude) để soạn nháp và soát câu chữ; Huy đã đọc lại các con số trong config và runbook.
+- Vòng 2 (thẻ S6): viết Runbook 4–5 (ngưỡng VÀNG/ĐỎ cho 4 chỉ số mới, ai báo hãng trong 1 ngày, ba kịch bản "nếu … thì …") và Risk register C10 (tracking theo kiện sai, lỗi hãng bị giữ chưa có hàng chờ, đơn tách kiện tăng lúc cao điểm); cập nhật PIC checklist ở C11.
 
 ### Bằng chứng
 
@@ -99,6 +102,7 @@ Kỹ sư cổng (người thứ hai cùng Nguyên). Đọc trace và đối chi�
 - Soát từng cổng: G1–G2 đối chiếu số tiền và phê duyệt với DB, G3 lỗi hãng cần nguyên nhân đã ghi, G4 chỉ gửi hãng các trường được phép.
 - Kiểm chéo số liệu ba mốc: base `pass_rate` 0,9909; after và prepared 1,0; hoàn sai 20.000đ → 0đ.
 - Dùng trợ lý AI (Claude) để giải thích code và soát câu chữ; Trường đã đọc lại cổng và số liệu trước khi nộp.
+- Vòng 2 (thẻ S6): dò trace `S6-02`, `S6-21`, `S6-43` ở mốc base, prepared, after; kiểm chéo số liệu ba mốc (pass_rate 0,3333 → 0,8333 → 1,0; hoàn sai 270.000đ → 270.000đ → 0đ; lỗi hãng oan 40 → 10 → 0) với report và Phiếu C; soát cổng G5, G6 cùng Nguyên.
 
 ### Bằng chứng
 

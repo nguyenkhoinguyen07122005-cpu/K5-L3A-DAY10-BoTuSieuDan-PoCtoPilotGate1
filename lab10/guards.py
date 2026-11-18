@@ -44,8 +44,8 @@ trước khi ghi. Không có quy tắc nào dựa vào mã ticket hay câu chữ
       ← B2 (T-002@55, model tin số ngày khách khai) · HAZOP issue_refund/WRONG, PERTURBED · pre-mortem kỹ thuật #1
   G2  write_gate · issue_refund: khoản vượt hạn mức tự động của chính sách phải có phê duyệt HỢP LỆ của CHÍNH
       ticket này (đúng ticket, đúng đơn, còn hạn, trạng thái valid, đủ hạn mức, người duyệt đúng người đứng tên).
-      Không có thì chuyển người TRƯỚC khi ghi. Thêm trần Ops/Finance: tổng hoàn tự động cho một khách trong ngày,
-      và từ lỗi thứ 3 của cùng một hãng trong ngày thì chuyển người (theo `ops_limits`).
+      Không có thì chuyển người TRƯỚC khi ghi. Thêm trần Ops/Finance: tổng hoàn tự động cho một khách trong ngày.
+      (Trần "từ lỗi thứ 3 của cùng một hãng trong ngày" ở vòng 1 nằm trong lệnh hoàn; vòng 2 chuyển sang G6.)
       ← HAZOP issue_refund/INVALID (phê duyệt của đơn khác, hết hạn) · pre-mortem kinh doanh
   G3  write_gate · file_carrier_fault: chỉ ghi lỗi khi tracking ghi rõ nguyên nhân thuộc `fault_causes` của chính sách
       đang hiệu lực và trễ thật ≥ ngưỡng; ghi đúng kiện / đúng hãng / đúng số ngày theo DB.
@@ -53,6 +53,25 @@ trước khi ghi. Không có quy tắc nào dựa vào mã ticket hay câu chữ
   G4  write_gate · notify_carrier: chỉ gửi cho hãng đúng các trường chính sách cho phép (`carrier_notice_fields`);
       bỏ chữ khách tự gõ và thông tin người nhận quà. send_reply: số tiền báo khách = số thật trong sổ cái.
       ← pre-mortem pháp lý (lộ dữ liệu cá nhân cho bên thứ ba) · HAZOP notify_carrier/PERTURBED
+===================================================================================================================
+VÒNG 2 · THẺ S6 · "Tài xế bị trừ thưởng vì kiện của hãng khác" (cổng thêm sau khi biết sự cố; cổng vòng 1 giữ nguyên)
+
+Nguyên nhân gốc (không dừng ở nhánh đầu): hệ thống hình dung "một đơn = một số ngày trễ = một hãng", còn thực tế vận hành
+là MỖI KIỆN có hãng, tài xế, ngày giao riêng. Khi ticket không nói rõ kiện nào, `helpers.ticket_parcel` âm thầm chọn kiện
+trễ nhất rồi cổng vòng 1 coi lựa chọn đó là đúng. Hai hãng cùng trễ thì hãng bị ghi lỗi là hãng may rủi, và tài xế của
+kiện đó bị trừ thưởng. Cổng vòng 1 sửa được "ghi nhầm kiện đúng hẹn" nhưng KHÔNG sửa được "không biết kiện nào".
+
+  G5  write_gate · issue_refund (và file_carrier_fault): xác định ĐÚNG MỘT kiện mà ticket nói tới.
+      - ticket có `parcel_id` mà kiện đó không thuộc đơn  → chuyển người (đầu vào không khớp thực tế).
+      - ticket không có `parcel_id`, đơn có ≥ 2 kiện và ≥ 2 kiện trễ tới ngưỡng tính phí → CHUYỂN NGƯỜI TRƯỚC khi
+        ghi khoản hoàn: không hoàn, không ghi lỗi hãng, không báo hãng. Không được đoán.
+      - còn lại (ticket nói rõ kiện, hoặc chỉ có đúng một kiện trễ) → như vòng 1.
+      ← HAZOP S6 file_carrier_fault/INCOMPLETE (thiếu kiện) và WRONG (chọn kiện theo "trễ nhất")
+  G6  write_gate · file_carrier_fault: trần số lỗi tự động của một hãng trong ngày (`ops_limits`: 2) áp NGAY TẠI lệnh ghi
+      lỗi. Vòng 1 chặn ở lệnh hoàn tiền (chuyển cả ticket cho người); vòng 2 tách hai việc: khách vẫn được hoàn tự
+      động đúng chính sách, còn lỗi từ lần thứ 3 của hãng trong ngày bị GIỮ (không ghi, không báo hãng) chờ người duyệt.
+      Rẻ hơn (không tốn một ca duyệt cho mỗi ticket) và đúng bản chất: khách không có lỗi, chỉ việc đổ lỗi cho hãng cần người.
+      ← S6 "ghi một lèo mấy lỗi liền"
 ===================================================================================================================
 """
 from . import helpers as H  # noqa: F401
@@ -67,15 +86,38 @@ def _policy(ctx):
     return H.effective_policy(ctx.tools.lookup_policies(), ctx.as_of)
 
 
+def _target(ctx, order, policy):
+    """G5 · kiện mà ticket nói tới: (parcel, None) nếu xác định được ĐÚNG MỘT kiện, (None, lý do) nếu phải để người xem.
+    Không đoán theo "kiện trễ nhất" như helpers.ticket_parcel khi đơn có nhiều kiện cùng trễ."""
+    parcels = order["parcels"]
+    pid = ctx.ticket.get("parcel_id")
+    if pid:
+        hit = next((p for p in parcels if p["parcel_id"] == pid), None)
+        if hit is None:
+            return None, f"ticket ghi kiện {pid} không thuộc đơn {order['order_id']}"
+        return hit, None
+    if len(parcels) == 1:
+        return parcels[0], None
+    floor = int(policy["late"]["min_days_fee"])
+    late = [p for p in parcels if H.db_delay_days(p, ctx.as_of) >= floor]
+    if len(late) >= 2:
+        who = ", ".join(f"{p['parcel_id']}/{p['carrier_id']}" for p in late)
+        return None, f"đơn có {len(late)} kiện cùng trễ ({who}) mà ticket không nói rõ kiện nào"
+    return (late[0] if late else max(parcels, key=lambda p: H.db_delay_days(p, ctx.as_of))), None
+
+
 def _facts(ctx, order_id):
-    """(order, parcel, delay_db, cause_recorded, policy) cho ticket đang xử lý, hoặc None nếu thiếu dữ liệu."""
+    """(order, parcel, delay_db, cause_recorded, policy, why_unclear) cho ticket đang xử lý, hoặc None nếu thiếu dữ liệu.
+    `why_unclear` khác None = không xác định được kiện (parcel là None, delay là 0)."""
     order = ctx.tools.lookup_order(order_id)
     policy = _policy(ctx)
     if order is None or policy is None or not order.get("parcels"):
         return None
-    parcel = H.ticket_parcel(order, ctx.ticket, ctx.as_of)
+    parcel, why = _target(ctx, order, policy)
+    if parcel is None:
+        return order, None, 0, None, policy, why
     delay = H.db_delay_days(parcel, ctx.as_of)
-    return order, parcel, delay, parcel.get("delay_cause"), policy
+    return order, parcel, delay, parcel.get("delay_cause"), policy, None
 
 
 def _entitlement(ctx, order, parcel, delay, cause, policy):
@@ -129,8 +171,13 @@ def _gate_refund(ctx, action):
     f = _facts(ctx, oid)
     if f is None:
         return Verdict.escalate("thiếu đơn / tracking / chính sách để đối chiếu số tiền")
-    order, parcel, delay, cause, policy = f
+    order, parcel, delay, cause, policy, unclear = f
     asked = int(action.get("amount_vnd") or 0)
+
+    # G5 · không xác định được đúng một kiện thì DỪNG TRƯỚC khi ghi khoản hoàn (không hoàn, không ghi lỗi, không báo hãng)
+    if unclear:
+        ctx.log("ambiguous_parcel", order_id=oid, ticket_parcel=ctx.ticket.get("parcel_id"), reason=unclear)
+        return Verdict.escalate(f"{unclear}: chuyển người hỏi lại khách")
 
     # G1a · không ghi hai lần cho cùng ticket (ghi lặp khi "không chắc đã ghi")
     if ctx.tools.ledger_rows(ticket_id=tid):
@@ -176,12 +223,8 @@ def _gate_refund(ctx, action):
             ctx.log("customer_daily_cap", customer_id=order["customer_id"], today=cust_today, asked=due, cap=cust_cap)
             return Verdict.escalate("vượt trần hoàn tự động cho một khách trong ngày: chuyển người duyệt")
 
-    if H.carrier_at_fault(policy, parcel, delay):           # lỗi thứ 3 của cùng hãng trong ngày cần người duyệt
-        strikes = len(ctx.tools.fault_rows(carrier_id=parcel["carrier_id"]))
-        max_strikes = lim.get("max_auto_strikes_per_carrier_per_day")
-        if max_strikes is not None and strikes >= max_strikes:
-            ctx.log("carrier_strike_cap", carrier_id=parcel["carrier_id"], strikes_today=strikes, cap=max_strikes)
-            return Verdict.escalate(f"hãng {parcel['carrier_id']} đã có {strikes} lỗi trong ngày: lỗi tiếp theo cần người duyệt")
+    # Vòng 2 (S6): trần lỗi hãng KHÔNG còn chặn khoản hoàn cho khách. Khách không có lỗi gì khi hãng đã chạm trần,
+    # nên khoản hoàn vẫn tự động; phần "ghi lỗi cho hãng" mới bị giữ lại cho người xem (xem G6 trong _gate_fault).
 
     if changes:
         ctx.log("refund_corrected", order_id=oid, asked=asked, due=due, db_delay=delay, cause=cause,
@@ -195,13 +238,20 @@ def _gate_fault(ctx, action):
     f = _facts(ctx, oid)
     if f is None:
         return Verdict.deny("thiếu đơn / tracking / chính sách: không ghi lỗi cho hãng")
-    order, parcel, delay, cause, policy = f
+    order, parcel, delay, cause, policy, unclear = f
+    if unclear:                                              # G5 · lớp thứ hai: không bao giờ ghi lỗi khi chưa rõ kiện
+        return Verdict.deny(f"{unclear}: không ghi lỗi cho hãng nào")
     if not ctx.tools.ledger_rows(ticket_id=action.get("ticket_id")):
         return Verdict.deny("chưa có khoản hoàn hợp lệ cho ticket này: không ghi lỗi hãng")
     if not H.carrier_at_fault(policy, parcel, delay):
         ctx.log("carrier_fault_blocked", parcel_id=parcel["parcel_id"], carrier_id=parcel["carrier_id"],
                 db_delay=delay, recorded_cause=cause, policy_id=policy["policy_id"])
         return Verdict.deny(f"tracking không cho thấy lỗi hãng (trễ {delay} ngày, nguyên nhân {cause})")
+    cap = ctx.tools.ops_limits().get("max_auto_strikes_per_carrier_per_day")   # G6 · trần lỗi tự động của một hãng trong ngày
+    strikes = len(ctx.tools.fault_rows(carrier_id=parcel["carrier_id"]))
+    if cap is not None and strikes >= cap:
+        ctx.log("carrier_strike_cap", carrier_id=parcel["carrier_id"], strikes_today=strikes, cap=cap, at="file_carrier_fault")
+        return Verdict.deny(f"hãng {parcel['carrier_id']} đã có {strikes} lỗi tự động trong ngày: lỗi này cần người xem")
     want = {"parcel_id": parcel["parcel_id"], "carrier_id": parcel["carrier_id"],
             "driver_id": parcel.get("driver_id"), "delay_days": delay}
     changes = {k: v for k, v in want.items() if action.get(k) != v}

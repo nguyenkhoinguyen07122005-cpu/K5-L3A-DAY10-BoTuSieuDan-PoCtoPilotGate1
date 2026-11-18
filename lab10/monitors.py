@@ -90,6 +90,36 @@ def cost_per_ticket_vnd(trials):
     return sum(t.get("cost_vnd") or 0 for t in trials) / max(1, len(trials))
 
 
+def ambiguous_parcel_rate(trials):
+    """S6 · Kỹ thuật/pháp lý: tỉ lệ ticket mà đơn có nhiều kiện cùng trễ nhưng ticket không nói rõ kiện nào (cổng chặn,
+    chuyển người). Tăng = nhiều đơn tách kiện hơn dự kiến, hoặc kênh ticket không thu được mã kiện."""
+    return _share(trials, lambda t: _has(t, guard=("ambiguous_parcel",)))
+
+
+def wrong_target_fault_rate(trials):
+    """S6 · Pháp lý: tỉ lệ ticket mà model định ghi lỗi cho SAI kiện / SAI hãng (cổng phải sửa lại). Đây là chỉ số bắt
+    đúng tác hại trong tin nhắn của hãng: tài xế bị trừ thưởng vì kiện của hãng khác."""
+    return _share(trials, lambda t: any(e.get("type") == "guard" and e.get("kind") == "carrier_fault_corrected"
+                                        and ({"carrier_id", "parcel_id", "driver_id"} & set(e.get("changes") or []))
+                                        for e in t.get("events") or []))
+
+
+def fault_withheld_rate(trials):
+    """S6 · Vận hành: tỉ lệ ticket mà lỗi hãng bị GIỮ vì hãng đã chạm trần lỗi tự động trong ngày (hàng chờ người duyệt
+    cuối ngày). Tăng = một hãng đang bị ghi dồn, hoặc người duyệt cần làm hàng chờ này sớm hơn."""
+    return _share(trials, lambda t: _has(t, guard=("carrier_strike_cap",)))
+
+
+def max_faults_per_carrier_day(trials):
+    """S6 · Vận hành: số lỗi hãng nhiều nhất mà MỘT hãng bị ghi trong MỘT ngày (trần Ops: 2 lỗi tự động, từ lỗi 3 cần người)."""
+    per = {}
+    for t in trials:
+        for f in t.get("faults") or []:
+            key = (t.get("seed"), t.get("day"), f.get("carrier_id"))
+            per[key] = per.get(key, 0) + 1
+    return float(max(per.values(), default=0))
+
+
 MONITORS = {
     "escalation_rate": escalation_rate,     # có sẵn; KHÔNG tính là metric mới của đội
     "model_override_rate": model_override_rate,
@@ -100,5 +130,9 @@ MONITORS = {
     "llm_error_rate": llm_error_rate,
     "peak_hour_review_load": peak_hour_review_load,
     "cost_per_ticket_vnd": cost_per_ticket_vnd,
+    "ambiguous_parcel_rate": ambiguous_parcel_rate,
+    "wrong_target_fault_rate": wrong_target_fault_rate,
+    "max_faults_per_carrier_day": max_faults_per_carrier_day,
+    "fault_withheld_rate": fault_withheld_rate,
 }
 STARTER_MONITORS = ("escalation_rate",)
