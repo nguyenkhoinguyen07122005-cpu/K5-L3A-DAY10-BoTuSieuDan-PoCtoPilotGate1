@@ -32,7 +32,7 @@ Kỹ sư cổng, trưởng nhóm. Viết `lab10/guards.py` (cổng G0–G4: ghim
 - Dựng `pre_guard` và `write_gate` cho bốn loại ghi: hoàn tiền, báo lỗi hãng, báo hãng, trả lời khách.
 - Thêm các chỉ số theo dõi: tỉ lệ model bị cổng sửa, tỉ lệ ticket có chỉ thị lạ, chi phí mỗi ticket, tải hàng chờ giờ cao điểm.
 - Ký tiêu chí rồi mới đo; đối chiếu số đo `base` → `after` → `prepared` và ghi vào Phiếu B.
-- Dùng trợ lý AI (Claude) để đọc code, soạn nháp cổng và soát câu chữ phiếu. Cả bàn đã đọc lại; các ngưỡng và quyết định do cả bàn chốt.
+- Dùng trợ lý AI để đọc code. 
 
 ### Bằng chứng
 
@@ -54,7 +54,7 @@ Sản phẩm và kinh doanh. Phiếu A (A1–A5), `config/acceptance_criteria.js
 - Viết các câu tiêu chí "Nếu … thì chúng tôi sẽ …" và luật quyết định Tiếp tục / Chỉnh / Dừng.
 - Ký tiêu chí trước lần đánh giá đầu tiên.
 - Đọc chi phí mỗi ticket và ROI khi tính lại với 1 và 2 người trực (4.456đ, ROI 1,24 với 1 người; 5.820đ, ROI 0,72 với 2 người), từ đó chọn giữ 1 người trực.
-- Dùng trợ lý AI (Claude) để soạn nháp và soát câu chữ Phiếu A; ngưỡng do bàn chọn và Công giải thích được.
+- Dùng trợ lý AI để soát câu chữ Phiếu A; ngưỡng do bàn chọn.
 
 ### Bằng chứng
 
@@ -76,7 +76,7 @@ Vận hành và pháp lý. `config/operating_gates.json` mục `operations` và 
 - Liệt kê các trường PII bị chặn khi gửi hãng (`recipient_contact`, `customer_note`, `recipient`, `name`, `phone`, `street`, `address`, `email`) và quy tắc lỗi hãng chỉ ghi khi có nguyên nhân đã được ghi.
 - Viết các dòng HAZOP ngoài kỹ thuật (người duyệt, bên thứ ba, quy trình) và gắn PIC có tên cho từng nhóm việc trong checklist.
 - Viết runbook 1–3 khớp với con số trong config (trần 1.500.000đ/ngày, 45 phút, 1 người trực).
-- Dùng trợ lý AI (Claude) để soạn nháp và soát câu chữ; Huy đã đọc lại các con số trong config và runbook.
+- Dùng trợ lý AI để soát câu chữ; đã đọc lại các con số trong config và runbook.
 
 ### Bằng chứng
 
@@ -97,7 +97,7 @@ Kỹ sư cổng (người thứ hai cùng Nguyên). Đọc trace và đối chi�
 - Đọc trace `T-002@55` từng bước: model lấy 5 ngày trễ từ lời khách trong khi sổ vận đơn ghi 2 ngày, dẫn tới hoàn 20.000đ sai và ghi lỗi hãng oan cho VNX.
 - Soát từng cổng: G1–G2 đối chiếu số tiền và phê duyệt với DB, G3 lỗi hãng cần nguyên nhân đã ghi, G4 chỉ gửi hãng các trường được phép.
 - Kiểm chéo số liệu ba mốc: base `pass_rate` 0,9909; after và prepared 1,0; hoàn sai 20.000đ → 0đ.
-- Dùng trợ lý AI (Claude) để giải thích code và soát câu chữ; Trường đã đọc lại cổng và số liệu trước khi nộp.
+- Dùng trợ lý AI để giải thích code và soát câu chữ; đã đọc lại cổng và số liệu trước khi nộp.
 
 ### Bằng chứng
 
