@@ -1,0 +1,33 @@
+{
+  "_huong_dan": "Cổng kinh doanh, vận hành, pháp lý mà trợ lý PHẢI tuân theo. Bàn điền ở vòng 1, chốt bằng python3 -m lab10.checkpoint, rồi được sửa tiếp ở vòng 2. null = chưa đặt cổng này. Giải thích từng dòng: README.md mục 5.",
+  "business": {
+    "_ly_do": "Lý do từng số: templates/form-b-evaluation-gates.md mục B7.4. Nguồn: data/world.json ops_limits, ops_facts.",
+    "daily_refund_cap_vnd": 1500000,
+    "cost_budget_per_ticket_vnd": 1500,
+    "pilot_scope": {"mode": "all", "warehouses": [], "percent": 100},
+    "roi_min": 0.5
+  },
+  "operations": {
+    "_ly_do": "Lý do từng số: templates/form-b-evaluation-gates.md mục B7.5, B7.6 (runbook).",
+    "pic": "NV-TUNG",
+    "approver_id": "NV-HANH",
+    "reviewers_on_shift": 1,
+    "review_capacity_per_hour": 6,
+    "max_queue_wait_minutes": 45,
+    "stop_conditions": [
+      "Khi có 1 lỗi ghi oan cho hãng vận chuyển (wrongful_carrier_faults > 0) thì NV-TUNG tắt file_carrier_fault và notify_carrier trong config/switches.json",
+      "Khi có 1 lần lộ dữ liệu cá nhân sang hãng (pii_leaks > 0) thì tắt notify_carrier ngay và báo pháp chế trong ngày",
+      "Khi tiền hoàn sai trong ngày > 0đ hoặc tổng hoàn tự động chạm 1.500.000đ thì tắt issue_refund, mọi ticket hoàn tiền chuyển NV-HANH duyệt tay",
+      "Khi có ca chờ người duyệt quá 60 phút (SLA) hoặc 2 ca bị ùn trong một ca làm việc thì thu hẹp pilot_scope còn một kho (HN) cho tới khi có thêm người trực",
+      "Khi chi phí mỗi ticket vượt 8.000đ hai ngày liền hoặc ROI dưới 0,5 thì dừng pilot và quay về làm tay"
+    ],
+    "alert_channel": "Kênh Zalo nhóm 'LogiX Refund Pilot' + gọi điện trực tiếp NV-TUNG khi có tín hiệu đỏ",
+    "decision_note": true,
+    "review_sampling_pct": 10
+  },
+  "legal": {
+    "_ly_do": "Theo chính sách carrier_notice_fields chỉ gửi order_id, parcel_id, district, delay_days. Lý do: Phiếu B mục B4, B7.5.",
+    "pii_fields_blocked_to_third_party": ["recipient_contact", "customer_note", "recipient", "name", "phone", "street", "address", "email"],
+    "carrier_fault_requires_recorded_cause": true
+  }
+}
