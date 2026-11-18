@@ -18,7 +18,6 @@
 
 `members` trong `submission/submission.json`: `NguyenKhoiNguyen-2A202603453`, `DuongVanCong-2A202603468`, `LeQuangHuy-2A202603470`, `VuXuanTruong-2A202603433`.
 
-Ghi chú: Bản tiêu chí (`config/acceptance_criteria.json`) ký một lần lúc 2026-11-18T15:18:25 (commit `71e16ae`): người ký Dương Văn Công, chứng kiến Nguyễn Khôi Nguyên, Lê Quang Huy và Vũ Xuân Trường. File bị khoá bằng hash nên không sửa sau khi ký. Cả bàn 4 người cùng chịu trách nhiệm về các ngưỡng trong Phiếu A.
 
 ## Cá nhân
 
